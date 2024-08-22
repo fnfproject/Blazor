@@ -1,0 +1,58 @@
+﻿@page "/verify-2fa"
+@inject HttpClient Http
+
+<h3>Verify Two-Factor Authentication</h3>
+
+<EditForm Model="@verify2FAModel" OnValidSubmit="HandleVerify2FA">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="verify2FAModel.Username" />
+    </div>
+    <div>
+        <label for="code">2FA Code:</label>
+        <InputText id="code" @bind-Value="verify2FAModel.Code" />
+    </div>
+    <button type="submit">Verify 2FA</button>
+</EditForm>
+
+@if (verificationMessage != null)
+{
+    <div>
+        <p>@verificationMessage</p>
+    </div>
+}
+
+@code {
+    private Verify2FADto verify2FAModel = new Verify2FADto();
+    private string verificationMessage;
+
+    private async Task HandleVerify2FA()
+    {
+        var response = await Http.PostAsJsonAsync("api/Auth/verify-2fa", verify2FAModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<Verify2FAResult>();
+            verificationMessage = result?.Message;
+        }
+        else
+        {
+            // Handle error (e.g., display an error message)
+            verificationMessage = "Invalid 2FA code.";
+        }
+    }
+
+    public class Verify2FADto
+    {
+        public string Username { get; set; }
+        public string Code { get; set; }
+    }
+
+    public class Verify2FAResult
+    {
+        public string Message { get; set; }
+    }
+}
+

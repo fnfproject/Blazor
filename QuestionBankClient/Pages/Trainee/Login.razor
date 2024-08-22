@@ -1,0 +1,49 @@
+﻿@page "/login"
+@inject HttpClient Http
+
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" type="password" @bind-Value="loginModel.Password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginDto loginModel = new LoginDto();
+
+    private async Task HandleLogin()
+    {
+        var response = await Http.PostAsJsonAsync("api/Auth/login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            // Store token or handle successful login
+        }
+        else
+        {
+            // Handle error
+        }
+    }
+
+    public class LoginDto
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class TokenResponse
+    {
+        public string Token { get; set; }
+    }
+}
+
